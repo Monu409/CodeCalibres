@@ -3,11 +3,20 @@ package com.example.myapplication;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.provider.Settings;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.common.Priority;
+import com.androidnetworking.error.ANError;
+import com.androidnetworking.interfaces.JSONObjectRequestListener;
+
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
     private WebView webview;
@@ -17,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
         getWindow().requestFeature(Window.FEATURE_PROGRESS);
         setContentView(R.layout.activity_main);
         setTitle("Vote For Lebanon");
+        sendDeviceId();
         // Makes Progress bar Visible
         getWindow().setFeatureInt( Window.FEATURE_PROGRESS, Window.PROGRESS_VISIBILITY_ON);
 
@@ -52,5 +62,23 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    private void sendDeviceId(){
+        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        AndroidNetworking.post("http://codecalibres.com/development/voteforlebanon/device/")
+                .addBodyParameter("device_id", deviceId)
+                .setPriority(Priority.MEDIUM)
+                .build()
+                .getAsJSONObject(new JSONObjectRequestListener() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.e("res",""+response);
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        Log.e("res",""+error);
+                    }
+                });
     }
 }
